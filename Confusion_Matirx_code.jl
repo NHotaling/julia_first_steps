@@ -76,31 +76,6 @@ function conf_matrix(actuals, preds)
     end
 end
 
-cwr = conf_matrix(real_vals, pred_vals)
-sum(cwr)
-
-using Random
-
-# Let's check performance of our code, let's see how long our confusion matrix calculation 
-# would take to compare two 16MP images to eachother
-
-# Set seed for a random initialization of two variables that will be 16M parameter arrays
-Random.seed!(9);
-act_vals = rand(0:1,(4096*4096))
-
-Random.seed!(11);
-mdl_vals = rand(0:1,(4096*4096))
-
-# create a variable that will store the confusion matrix returned for use later
-df = conf_matrix(act_vals, mdl_vals)
-
-typeof(df)
-
-# Look at total time to execute
-@time conf_matrix(act_vals, mdl_vals)
-
-
-
 
 # Function to define a the sensitivity, recall, hit rate, or true positive rate 
 # based on the definitions of the array positions from the confusion matrix function. 
