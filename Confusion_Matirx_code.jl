@@ -1,7 +1,8 @@
 # Features to add
 # Multithreading for confusion matrix function
 # Conditional multithreading only for large arrays
-# Multiple dispactch for different 
+# Multiple dispactch for different array types
+# Tiled reading of arrays
 #=
 Pkg.add("VegaLite")
 Pkg.add("DataFrames")
@@ -45,6 +46,7 @@ function conf_matrix(actuals, preds)
     elseif length(unique(preds)) > 2  # A few checks to ensure plugin runs smooth
         println("Prediction Value Array has more than binary classes")
     else # if above passes, we will sum values into a confusion matrix
+
         uniq_acts = unique(actuals) # Unique values for actual class (i.e. non-pred class)    
         tp = Float64(0)
         fn = Float64(0)
@@ -89,13 +91,7 @@ end
 # a single float64 value representing the sensitivity 
 
 function sensitivity(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
+    # Confusion matrix     
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -105,9 +101,22 @@ function sensitivity(acts, prds)
         tpr = tp/(tp+fn)
 
         return(tpr)
-    end
 end
 
+
+using Random
+
+Random.seed!(9)
+act_vals = rand(0:1,(4096*4096))
+
+Random.seed!(11)
+mdl_vals = rand(0:1,(4096*4096))
+
+conf_matrix(act_vals, mdl_vals)
+println(@time conf_matrix(act_vals, mdl_vals))
+
+sensitivity(act_vals, mdl_vals)
+println(@time sensitivity(act_vals, mdl_vals))
 
 # Function to define a the precision or positive predictive value
 # based on the definitions of the array positions from the confusion matrix function. 
@@ -121,13 +130,6 @@ end
 # a single float64 value representing the precision 
 
 function precision(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix 
 
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
@@ -138,7 +140,6 @@ function precision(acts, prds)
         ppv = tp/(tp+fp)
 
         return(ppv)
-    end
 end
 
 
@@ -154,14 +155,7 @@ end
 # a single float64 value representing the specificity 
 
 function specificity(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -171,7 +165,6 @@ function specificity(acts, prds)
         tnr = tn/(tn+fp)
 
         return(tnr)
-    end
 end
 
 
@@ -187,14 +180,7 @@ end
 # a single float64 value representing the NPV
 
 function neg_pred_val(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -204,7 +190,6 @@ function neg_pred_val(acts, prds)
         npv = tn/(tn+fn)
 
         return(npv)
-    end
 end
 
 
@@ -220,14 +205,8 @@ end
 # a single float64 value representing the FNR
 
 function false_neg_rate(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -237,7 +216,6 @@ function false_neg_rate(acts, prds)
         fnr = fn/(tp+fn)
 
         return(fnr)
-    end
 end
 
 
@@ -253,13 +231,7 @@ end
 # a single float64 value representing the FPR
 
 function false_pos_rate(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
+    # Confusion matrix  
  
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
@@ -270,7 +242,6 @@ function false_pos_rate(acts, prds)
         fpr = fp/(fp+tn)
 
         return(fpr)
-    end
 end
 
 
@@ -286,14 +257,8 @@ end
 # a single float64 value representing the FDR
 
 function false_disc_rate(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -303,7 +268,6 @@ function false_disc_rate(acts, prds)
         fdr = fp/(fp+tp)
 
         return(fdr)
-    end
 end
 
 
@@ -319,14 +283,8 @@ end
 # a single float64 value representing the FR
 
 function false_omis_rate(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -336,7 +294,6 @@ function false_omis_rate(acts, prds)
         fr = fn/(fn+tn)
 
         return(fr)
-    end
 end
 
 
@@ -352,14 +309,8 @@ end
 # a single float64 value representing the prev
 
 function prevalence(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -370,7 +321,6 @@ function prevalence(acts, prds)
         prev = (tp+fn)/ntot
 
         return(prev)
-    end
 end
 
 
@@ -386,13 +336,7 @@ end
 # a single float64 value representing the RI
 
 function accuracy(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
+    # Confusion matrix  
  
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
@@ -404,7 +348,6 @@ function accuracy(acts, prds)
         ri = (tp+tn)/ntot
 
         return(ri)
-    end
 end
 
 
@@ -420,14 +363,8 @@ end
 # a single float64 value representing the IoU
 
 function jaccard(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -437,7 +374,6 @@ function jaccard(acts, prds)
         iou = tp/(tp+fp+fn)
 
         return(iou)
-    end
 end
 
 
@@ -453,14 +389,8 @@ end
 # a single float64 value representing the BA
 
 function balanced_acc(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -470,7 +400,6 @@ function balanced_acc(acts, prds)
         ba = (0.5*tp/(tp+fn)) + (0.5*tn/(tn+fp))
 
         return(ba)
-    end
 end
 
 
@@ -486,14 +415,8 @@ end
 # a single float64 value representing the FScore at the fval level
 
 function fscore(acts, prds, fval)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -503,7 +426,6 @@ function fscore(acts, prds, fval)
         fscore = ((1+fval^2)*tp)/((1+fval^2)*tp + (fval^2)*fn + fp)
 
         return(fscore)
-    end
 end
 
 
@@ -519,14 +441,8 @@ end
 # a single float64 value representing the DI
 
 function dice_index(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -537,7 +453,6 @@ function dice_index(acts, prds)
         di = ((1+fval^2)*tp)/((1+fval^2)*tp + (fval^2)*fn + fp)
 
         return(di)
-    end
 end
 
 
@@ -553,13 +468,7 @@ end
 # a single float64 value representing the PT
 
 function prev_thresh(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
+    # Confusion matrix  
  
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
@@ -573,7 +482,6 @@ function prev_thresh(acts, prds)
         pt = ((tnr-1)+sqrt(tpr*(1-tnr)))/(tpr+tnr-1)
 
         return(pt)
-    end
 end
 
 
@@ -589,24 +497,19 @@ end
 # a single float64 value representing the MCC
 
 function mathews(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
         fp = cfm[3]
         tn = cfm[4]
 
-        mcc = ((tp*tn)-(fp*fn))/(√((tp+fp)*(tp+fn)*(tn+fn)*(tn+fp)))
+        mcc_num = (tp*tn)-(fp*fn)
+        mcc_denom = (√(tp+fp))*(√(tp+fn))*(√(tn+fn))*(√(tn+fp))
+        mcc = mcc_num/mcc_denom
         
         return(mcc)
-    end
 end
 
 
@@ -622,24 +525,17 @@ end
 # a single float64 value representing the FMI
 
 function fowlkes(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
         fp = cfm[3]
         tn = cfm[4]
 
-        fmi = √((tp/(tp+fp))*(tp/(tp+fn)))
+        fmi = √(tp/(tp+fp))*√(tp/(tp+fn))
         
         return(fmi)
-    end
 end
 
 
@@ -655,13 +551,7 @@ end
 # a single float64 value representing the BI
 
 function informedness(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
+    # Confusion matrix  
  
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
@@ -672,7 +562,6 @@ function informedness(acts, prds)
         bi = (tp/(tp+fn))+(tn/(tn+fp))-1
         
         return(bi)
-    end
 end
 
 
@@ -688,14 +577,8 @@ end
 # a single float64 value representing the MKN
 
 function markedness(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -705,7 +588,6 @@ function markedness(acts, prds)
         mkn = (tp/(tp+fp))+(tn/(tn+fn))-1
         
         return(mkn)
-    end
 end
 
 
@@ -721,14 +603,8 @@ end
 # a single float64 value representing the CK
 
 function cohenk(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -746,7 +622,6 @@ function cohenk(acts, prds)
         ck = ck_num/ck_denom
         
         return(ck)
-    end
 end
 
 
@@ -761,14 +636,8 @@ end
 # a single float64 value representing the MM
 
 function mirkin(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -780,7 +649,6 @@ function mirkin(acts, prds)
         mm = ntot*(ntot-1)*(1-ri)
         
         return(mm)
-    end
 end
 
 
@@ -795,14 +663,8 @@ end
 # a single float64 value representing the AMM
 
 function mirkin_adj(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = cfm[1]
         fn = cfm[2]
@@ -814,7 +676,6 @@ function mirkin_adj(acts, prds)
         amm = (ntot*(ntot-1)*(1-ri))/(ntot*ntot)
         
         return(amm)
-    end
 end
 
 
@@ -829,14 +690,8 @@ end
 # a single float64 value representing the ARI
 
 function rand_adj(acts, prds)
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = BigInt(cfm[1])
         fn = BigInt(cfm[2])
@@ -854,7 +709,6 @@ function rand_adj(acts, prds)
         ari= convert(Float64, ari)
 
         return(ari)
-    end
 end
 
 # Function to define an array of all function values above into a single function call
@@ -869,14 +723,8 @@ end
 # a single float64 value representing the ARI
 
 function all_cmm(acts, prds) 
-    if length(acts) != length(prds)  # A few checks to ensure plugin runs smooth
-        println("Arrays are not equal in length or more than binary classes")
-    elseif length(unique(acts)) > 2  # A few checks to ensure plugin runs smooth
-        println("Actual Value Array has more than binary classes")
-    elseif length(unique(prds)) > 2  # A few checks to ensure plugin runs smooth
-        println("Prediction Value Array has more than binary classes")
-    else # if above passes, we will sum values into a confusion matrix
- 
+    # Confusion matrix  
+
         cfm = conf_matrix(acts, prds)
         tp = BigInt(cfm[1])
         fn = BigInt(cfm[2])
@@ -925,7 +773,6 @@ function all_cmm(acts, prds)
         acmm = [tpr, ppv, tnr, npv, fnr, fpr, fdr, fr, prev, ri, iou, ba, f05score, di, f2score, pt, mcc, fmi, bi, mkn, ck, mm, amm, ari]
         acmm = convert(Array{Float64,1}, acmm)
         return(acmm)
-    end
 end
 
 
